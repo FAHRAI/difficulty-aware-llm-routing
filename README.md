@@ -3,6 +3,8 @@
 Code for the article *Adaptive Selection of Large Language Models Based on Query Difficulty, Quality Requirements,
 and Inference Cost* (O. Kholodniak).
 
+Archived on Zenodo: version v0.1.0, [doi:10.5281/zenodo.23093255](https://doi.org/10.5281/zenodo.23093255).
+
 An information system with access to several language models chooses one model per request. The method estimates
 the difficulty of the request from its text and picks the cheapest model that is likely to answer it correctly,
 or the model with the best success-probability/cost trade-off.

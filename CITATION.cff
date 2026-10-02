@@ -9,6 +9,7 @@ authors:
     orcid: "https://orcid.org/0009-0000-1012-7361"
     affiliation: "National Aerospace University \"Kharkiv Aviation Institute\""
 version: 0.1.0
+doi: 10.5281/zenodo.23093255
 license: MIT
 repository-code: "https://github.com/FAHRAI/difficulty-aware-llm-routing"
 keywords:
