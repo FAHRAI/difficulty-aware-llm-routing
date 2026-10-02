@@ -1,0 +1,6 @@
+d40ac32d71b5716cd8b7f5c33c05612c3b111a3a1ed855a6e9504ad0bd54948f  data/raw/sprout_test-00000-of-00001.parquet
+869336223180644e4c8395af51c8fee51ffdfcf619fce96392f6e0179a6fa3ff  data/raw/sprout_train-00000-of-00003.parquet
+c9d3e62145d1951032edad5be5701425a4109c271a9ffba4f45bd3d8fd4932ae  data/raw/sprout_train-00001-of-00003.parquet
+f3b0f101a1fe0381d2c3637f28a4a2ecc15830af60b46924590fcbc59fccff5e  data/raw/sprout_train-00002-of-00003.parquet
+c0d710427c0c902f8283c02fc1cf9f10416f51cb183c99ea92e3f633f8db9862  data/raw/sprout_validation-00000-of-00001.parquet
+ba4f77f19517610a707c374e99322d7750c30fc4ae7ff5527888595a1e65d36d  data/raw/routerbench_0shot.pkl

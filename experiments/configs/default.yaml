@@ -1,0 +1,39 @@
+seed: 20261001
+success_threshold: 0.5          # judge or task score >= threshold counts as a correct answer
+targets_eps: [0.0, 0.01, 0.02, 0.05, 0.10]
+bootstrap: 2000
+
+datasets:
+  sprout:
+    hf_repo: CARROT-LLM-Routing/SPROUT
+    revision: d54e3cda2189ca1ed13a877a44ed34736c4b6920
+  routerbench:
+    hf_repo: withmartian/routerbench
+    revision: 784021482c3f320c6619ed4b3bb3b41a21424fcb
+    file: routerbench_0shot.pkl
+
+# USD per 1M tokens (input, output): CARROT paper (arXiv:2502.03261v2), Appendix A, Table 2
+prices:
+  aws-claude-3-5-sonnet-v1: [3.0, 15.0]
+  aws-titan-text-premier-v1: [0.5, 1.5]
+  openai-gpt-4o: [2.5, 10.0]
+  openai-gpt-4o-mini: [0.15, 0.6]
+  wxai-granite-3-2b-instruct-8k-max-tokens: [0.1, 0.1]
+  wxai-granite-3-8b-instruct-8k-max-tokens: [0.2, 0.2]
+  wxai-llama-3-1-70b-instruct: [0.9, 0.9]
+  wxai-llama-3-1-8b-instruct: [0.2, 0.2]
+  wxai-llama-3-2-1b-instruct: [0.06, 0.06]
+  wxai-llama-3-2-3b-instruct: [0.06, 0.06]
+  wxai-llama-3-3-70b-instruct: [0.9, 0.9]
+  wxai-llama-3-405b-instruct: [3.5, 3.5]
+  wxai-mixtral-8x7b-instruct-v01: [0.6, 0.6]
+
+pools:
+  P6:
+    - wxai-llama-3-2-1b-instruct
+    - wxai-llama-3-2-3b-instruct
+    - wxai-llama-3-1-8b-instruct
+    - wxai-mixtral-8x7b-instruct-v01
+    - wxai-llama-3-3-70b-instruct
+    - wxai-llama-3-405b-instruct
+  P13: all
