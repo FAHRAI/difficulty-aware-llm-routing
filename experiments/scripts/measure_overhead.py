@@ -22,6 +22,7 @@ from darouter.routing.rules import select_r1
 THREADS = 4
 WARMUP, MEASURED, BATCH = 50, 500, 256
 TAU = 0.8
+SAMPLE_SEED = 1  # selects the timed test requests; independent of the experiment seed
 
 
 def cpu_name() -> str:
@@ -42,14 +43,14 @@ def main() -> None:
     prompts = df.prompt.to_numpy()
     encoder = load_encoder("cpu")
 
-    dar = {name: DAR(name).fit(fs, tr, Y[tr]) for name in ("HEUR", "TFIDF", "EMB")}
+    dar = {name: DAR(name, seed=cfg["seed"]).fit(fs, tr, Y[tr]) for name in ("HEUR", "TFIDF", "EMB")}
     knn = KNNRouter(cfg["seed"]).fit(fs.emb[tr], Y[tr])
     lr = PerModelLR(cfg["seed"]).fit(fs.emb[tr], Y[tr])
     predictors = {f"DAR-{k}": (lambda texts, r=r: r.proba_text(texts, encoder)) for k, r in dar.items()}
     predictors["KNN-EMB"] = lambda texts: knn.proba(embed(texts, encoder, batch_size=len(texts)))
     predictors["LR-EMB"] = lambda texts: lr.proba(embed(texts, encoder, batch_size=len(texts)))
 
-    sample = np.random.default_rng(1).choice(te, WARMUP + MEASURED, replace=False)
+    sample = np.random.default_rng(SAMPLE_SEED).choice(te, WARMUP + MEASURED, replace=False)
     timing = {"cpu": cpu_name(), "torch_threads": THREADS}
     for name, predict in predictors.items():
 

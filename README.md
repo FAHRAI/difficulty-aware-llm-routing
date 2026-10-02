@@ -26,10 +26,11 @@ No model is queried: the experiments use public matrices of recorded responses.
 | Dataset | Requests | Models | Outcome | Cost |
 |---|---|---|---|---|
 | [SPROUT](https://huggingface.co/datasets/CARROT-LLM-Routing/SPROUT) | 44,241 (official train/validation/test) | 13 | LLM-judge score ≥ 0.5 | token counts × published prices |
-| [RouterBench](https://huggingface.co/datasets/withmartian/routerbench), 0-shot | 36,497 (60/20/20 split) | 11 | task score ≥ 0.5 | recorded cost |
+| [RouterBench](https://huggingface.co/datasets/withmartian/routerbench), 0-shot | 36,497 (60/20/20 split, stratified by nine task groups) | 11 | task score ≥ 0.5 | recorded cost |
 
-Dataset revisions are pinned in `experiments/configs/default.yaml` and file checksums in `checksums.sha256`.
-The datasets are downloaded from Hugging Face, not redistributed here.
+Dataset revisions are pinned in `experiments/configs/default.yaml` and file checksums in `checksums.sha256`;
+the sentence encoder revision is pinned in `src/darouter/difficulty/embedding.py`. The datasets are downloaded from
+Hugging Face, not redistributed here.
 
 ## Layout
 
@@ -55,15 +56,17 @@ experiments/scripts/reproduce_all.sh
 ```
 
 About 0.7 GB is downloaded. On an Apple M1 Pro laptop the full pipeline takes about 30 minutes.
-Results are written to `results/` (tables in Markdown, numbers in JSON, figures in PNG); seeds are fixed in the
-configuration.
+Results are written to `results/` (tables in Markdown, numbers in JSON, figures in PNG). The experiment seed and the
+number of bootstrap replicates are set in the configuration; the two auxiliary sampling seeds (requests timed in
+`measure_overhead.py`, labelled samples in `new_model_calibration.py`) are fixed constants in those scripts.
 
 | Script | Output |
 |---|---|
 | `download_data.py`, `prepare_data.py`, `compute_features.py` | `data/raw`, `data/processed` |
-| `run_sprout.py [--pool P13] [--lodo]`, `run_routerbench.py` | `results/<run>/result.pkl` |
+| `run_sprout.py [--pool P13]`, `run_routerbench.py` | `results/<run>/result.pkl` |
+| `run_sprout.py --lodo` | `results/sprout_P6_lodo/result_<domain>.pkl` |
 | `report.py --run <run>` | `report.json`, `tables.md`, `fig_quality_cost.png` |
-| `report_lodo.py` | leave-one-domain-out summary |
+| `report_lodo.py` | `results/sprout_P6_lodo/lodo.md` |
 | `analyze_discrimination.py` | AUROC, difficulty correlation, routing behaviour, sensitivity checks |
 | `fixed_fallback.py` | rule R1 with a fixed fallback model |
 | `measure_overhead.py` | routing time per request on CPU |
@@ -77,6 +80,14 @@ pytest
 ruff check .
 ```
 
+## Citation
+
+See `CITATION.cff`.
+
 ## License
 
-MIT
+The code in this repository is released under the MIT License. The datasets and the encoder are downloaded from
+their authors and remain under their own terms: the
+[SPROUT](https://huggingface.co/datasets/CARROT-LLM-Routing/SPROUT) and
+[RouterBench](https://huggingface.co/datasets/withmartian/routerbench) dataset cards do not state a licence;
+[all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) is Apache-2.0.

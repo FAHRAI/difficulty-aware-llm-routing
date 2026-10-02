@@ -2,7 +2,7 @@
 
 Raw parquet files (pinned HF revision) -> one row per query with, for every model m:
 score_m (judge score), y_m (binarised success), nin_m / nout_m (token counts).
-Response texts are kept in a separate table because only the cascade baseline needs them.
+Response texts are kept in a separate table; they are needed only by the cascade baseline and the exact-match check.
 """
 
 from __future__ import annotations

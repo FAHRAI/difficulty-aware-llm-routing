@@ -15,6 +15,7 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
+from darouter.data.loading import load_config  # noqa: E402
 from darouter.metrics.report import Inference, fmt_ci, mixture_frontier, short, to_json  # noqa: E402
 from darouter.paths import RESULTS  # noqa: E402
 
@@ -56,9 +57,9 @@ CURVES = {
 }
 
 
-def build_report(res, B: int) -> dict:
+def build_report(res, B: int, seed: int) -> dict:
     domains = res.extra["test_domain"]
-    inf = Inference(res, domains, B=B)
+    inf = Inference(res, domains, B=B, seed=seed)
     eps_all = sorted(res.target_acc)
     fixed = [f"FIXED:{m}" for m in res.models]
     routers = sorted({m for m, _ in res.points if not m.startswith("FIXED:")})
@@ -183,12 +184,13 @@ def plot_curves(res, report: dict, path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--run", default="sprout_P6", help="directory name under results/")
-    parser.add_argument("--bootstrap", type=int, default=2000)
+    parser.add_argument("--bootstrap", type=int, help="replicates (default: from the configuration)")
     args = parser.parse_args()
     run_dir = RESULTS / args.run
     with open(run_dir / "result.pkl", "rb") as f:
         res = pickle.load(f)
-    report = build_report(res, args.bootstrap)
+    cfg = load_config()
+    report = build_report(res, args.bootstrap or cfg["bootstrap"], cfg["seed"])
     (run_dir / "report.json").write_text(json.dumps(report, indent=1, default=to_json))
     text = tables(res, report, args.run)
     (run_dir / "tables.md").write_text(text)

@@ -9,6 +9,7 @@ import numpy as np
 from darouter.difficulty.features import head_tail
 
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+MODEL_REVISION = "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
 MAX_SEQ_LENGTH = 256
 
 
@@ -18,7 +19,7 @@ def load_encoder(device: str | None = None):
 
     if device is None:
         device = "mps" if torch.backends.mps.is_available() else "cpu"
-    encoder = SentenceTransformer(MODEL_NAME, device=device)
+    encoder = SentenceTransformer(MODEL_NAME, revision=MODEL_REVISION, device=device)
     encoder.max_seq_length = MAX_SEQ_LENGTH
     return encoder
 

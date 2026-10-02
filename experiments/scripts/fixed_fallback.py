@@ -52,17 +52,19 @@ def main() -> None:
             val_cost = np.array([c.mean() for _, c in sweep])
             for eps, target in res.target_acc.items():
                 tau = pick_operating_point(list(TAU_GRID), val_acc, val_cost, target)
-                if tau is None:
-                    chosen, used, k = np.full(len(te), res.strong), np.zeros(len(te), bool), 0
+                if tau is None:  # target unreachable: the strongest model is used instead
+                    chosen, used = np.full(len(te), res.strong), np.zeros(len(te), bool)
+                    chosen_val_acc, chosen_val_cost = Y[va, res.strong].mean(), C[va, res.strong].mean()
                 else:
                     chosen, used = choose(p_test, CH[te], tau, fallback)
                     k = list(TAU_GRID).index(tau)
+                    chosen_val_acc, chosen_val_cost = val_acc[k], val_cost[k]
                 acc, cost = outcome_of_choice(chosen, Y[te], C[te])
                 res.points[(method, eps)] = {
                     "knob": tau,
                     "feasible": tau is not None,
-                    "val_acc": val_acc[k],
-                    "val_cost": val_cost[k],
+                    "val_acc": chosen_val_acc,
+                    "val_cost": chosen_val_cost,
                     "shares": (np.bincount(chosen, minlength=len(pool.models)) / len(chosen)).tolist(),
                     "fallback_share": float(used.mean()),
                     "fallback_acc": float(acc[used].mean()) if used.any() else None,
@@ -70,7 +72,7 @@ def main() -> None:
                 res.outcomes[(method, eps)] = (acc, cost)
                 added.append((method, eps))
 
-    inf = Inference(res, res.extra["test_domain"])
+    inf = Inference(res, res.extra["test_domain"], B=cfg["bootstrap"], seed=cfg["seed"])
     largest = pool.models.index(LARGEST)
     rows = [inf.summary(m, eps) for m, eps in added]
     lines = [

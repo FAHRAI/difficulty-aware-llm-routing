@@ -23,21 +23,26 @@ SAMPLE_SIZES = (50, 100, 200, 500, 1000)
 REPEATS = 20
 
 
+def draw_seed(n: int, repeat: int) -> int:
+    """Seed of the labelled sample for size n and repetition r (fixed, independent of the experiment seed)."""
+    return 1000 * n + repeat
+
+
 def log_loss(p: np.ndarray, y: np.ndarray) -> float:
     p = np.clip(p, 1e-6, 1 - 1e-6)
     return float(-(y * np.log(p) + (1 - y) * np.log(1 - p)).mean())
 
 
-def evaluate_new_model(fs, tr, te, Y, j: int) -> dict:
+def evaluate_new_model(fs, tr, te, Y, j: int, seed: int) -> dict:
     others = [k for k in range(Y.shape[1]) if k != j]
-    dar = DAR("EMB").fit(fs, tr, Y[tr][:, others])
+    dar = DAR("EMB", seed=seed).fit(fs, tr, Y[tr][:, others])
     d_train, d_test = dar.oof_, dar.difficulty(fs, te)
     y_train, y_test = Y[tr, j], Y[te, j]
     rows = {}
     for n in SAMPLE_SIZES:
         scores = {"DAR": {"logloss": [], "auroc": []}, "LR": {"logloss": [], "auroc": []}}
         for r in range(REPEATS):
-            pick = np.random.default_rng(1000 * n + r).choice(len(tr), n, replace=False)
+            pick = np.random.default_rng(draw_seed(n, r)).choice(len(tr), n, replace=False)
             if y_train[pick].min() == y_train[pick].max():
                 continue
             p_dar = LogisticRegression(C=1e6).fit(d_train[pick, None], y_train[pick]).predict_proba(d_test[:, None])
@@ -56,7 +61,7 @@ def evaluate_new_model(fs, tr, te, Y, j: int) -> dict:
             | {"draws": len(s["logloss"])}
             for name, s in scores.items()
         }
-    full = PerModelLR().fit(fs.emb[tr], Y[tr][:, [j]]).proba(fs.emb[te])[:, 0]
+    full = PerModelLR(seed).fit(fs.emb[tr], Y[tr][:, [j]]).proba(fs.emb[te])[:, 0]
     rows["full_train_LR_auroc"] = auroc(full, y_test)
     return rows
 
@@ -67,7 +72,7 @@ def main() -> None:
     split = df.split.to_numpy()
     tr, te = np.flatnonzero(split == "train"), np.flatnonzero(split == "test")
     pool, Y, _, _ = pool_arrays(df, cfg, "P6", tr)
-    result = {m: evaluate_new_model(fs, tr, te, Y, j) for j, m in enumerate(pool.models)}
+    result = {m: evaluate_new_model(fs, tr, te, Y, j, cfg["seed"]) for j, m in enumerate(pool.models)}
 
     out = RESULTS / "sprout_P6"
     out.mkdir(parents=True, exist_ok=True)

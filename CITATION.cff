@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Difficulty-aware LLM routing"
+abstract: "Code for selecting a large language model per request from an estimate of the request's difficulty, a quality tolerance and inference cost, with experiments on the SPROUT and RouterBench response matrices."
+type: software
+authors:
+  - family-names: Kholodniak
+    given-names: Oleksandr
+    orcid: "https://orcid.org/0009-0000-1012-7361"
+    affiliation: "National Aerospace University \"Kharkiv Aviation Institute\""
+version: 0.1.0
+license: MIT
+repository-code: "https://github.com/FAHRAI/difficulty-aware-llm-routing"
+keywords:
+  - large language models
+  - model selection
+  - query routing
+  - item response theory
+  - inference cost

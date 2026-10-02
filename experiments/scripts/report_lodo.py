@@ -4,6 +4,7 @@ import pickle
 
 import numpy as np
 
+from darouter.data.loading import load_config
 from darouter.metrics.report import Inference, short
 from darouter.paths import RESULTS
 
@@ -12,6 +13,7 @@ METHODS = ["DAR-EMB/R1", "DAR-EMB/R2", "DAR-TFIDF/R2", "DAR-HEUR/R2", "LR-EMB/R2
 
 
 def main() -> None:
+    cfg = load_config()
     run_dir = RESULTS / "sprout_P6_lodo"
     lines = [
         f"# Leave-one-domain-out, eps = {EPS} (held-out domain excluded from all fitting and tuning)\n",
@@ -22,7 +24,7 @@ def main() -> None:
     for path in sorted(run_dir.glob("result_*.pkl")):
         with open(path, "rb") as f:
             res = pickle.load(f)
-        inf = Inference(res, res.extra["test_domain"], B=1000)
+        inf = Inference(res, res.extra["test_domain"], B=cfg["bootstrap"], seed=cfg["seed"])
         strong_acc, strong_cost = res.outcomes[(inf.strong, EPS)]
         cells = []
         for m in METHODS:

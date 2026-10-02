@@ -33,7 +33,7 @@ ANSWER_LETTER = re.compile(r"answer is \(?([A-J])\)?")
 class Context:
     """Test-split arrays of a finished run, aligned with the stored success estimates."""
 
-    def __init__(self, res, df: pd.DataFrame, cfg: dict, pool_name: str, seed: int):
+    def __init__(self, res, df: pd.DataFrame, cfg: dict, pool_name: str):
         split = df.split.to_numpy()
         self.tr, self.te = np.flatnonzero(split == "train"), np.flatnonzero(split == "test")
         pool, Y, C, CH = pool_arrays(df, cfg, pool_name, self.tr)
@@ -43,7 +43,7 @@ class Context:
         self.Y, self.C, self.CH = Y[self.te], C[self.te], CH[self.te]
         self.cbar = CH[self.tr][:, res.strong].mean()
         self.domain = df.domain.to_numpy()[self.te]
-        self.boot = stratified_bootstrap_indices(self.domain, 2000, seed)
+        self.boot = stratified_bootstrap_indices(self.domain, cfg["bootstrap"], cfg["seed"])
 
     def choice(self, method: str, eps: float = EPS) -> np.ndarray:
         """Model chosen for every test request by a method at its validation-selected operating point."""
@@ -241,7 +241,7 @@ def main() -> None:
         res = pickle.load(f)
     cfg = load_config()
     df = pd.read_parquet(DATA_PROCESSED / "sprout.parquet")
-    ctx = Context(res, df, cfg, args.pool, cfg["seed"])
+    ctx = Context(res, df, cfg, args.pool)
 
     out, md = {}, [f"# Diagnostics — {args.run}\n"]
     for part in (

@@ -15,6 +15,10 @@ SPROUT_FILES = [
 ]
 
 
+def sha256(path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 def hf_url(repo: str, revision: str, path: str) -> str:
     return f"https://huggingface.co/datasets/{repo}/resolve/{revision}/{path}"
 
@@ -28,18 +32,19 @@ def main() -> None:
     }
     targets[routerbench["file"]] = hf_url(routerbench["hf_repo"], routerbench["revision"], routerbench["file"])
 
+    expected = dict(reversed(line.split()) for line in (ROOT / "checksums.sha256").read_text().splitlines() if line)
     DATA_RAW.mkdir(parents=True, exist_ok=True)
     for name, url in targets.items():
-        path = DATA_RAW / name
-        if not path.exists():
-            print(f"downloading {name}")
-            urllib.request.urlretrieve(url, path)
-
-    expected = dict(reversed(line.split()) for line in (ROOT / "checksums.sha256").read_text().splitlines() if line)
-    for name in targets:
-        digest = hashlib.sha256((DATA_RAW / name).read_bytes()).hexdigest()
-        if digest != expected[f"data/raw/{name}"]:
-            raise SystemExit(f"checksum mismatch: {name}")
+        path, want = DATA_RAW / name, expected[f"data/raw/{name}"]
+        if path.exists() and sha256(path) == want:
+            continue
+        print(f"downloading {name}")
+        partial = path.with_name(path.name + ".part")
+        urllib.request.urlretrieve(url, partial)
+        if sha256(partial) != want:
+            partial.unlink()
+            raise SystemExit(f"checksum mismatch after download: {name}")
+        partial.replace(path)
     print("all files present, checksums verified")
 
 

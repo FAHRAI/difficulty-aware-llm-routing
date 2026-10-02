@@ -25,9 +25,10 @@ def main() -> None:
 
     DATA_PROCESSED.mkdir(parents=True, exist_ok=True)
     emb_path, heur_path = DATA_PROCESSED / "rb_emb_minilm.npy", DATA_PROCESSED / "rb_heur.npy"
-    if not emb_path.exists():
-        np.save(emb_path, embed(df.prompt))
+    cached = emb_path.exists() and heur_path.exists() and len(np.load(emb_path, mmap_mode="r")) == len(df)
+    if not cached:
         np.save(heur_path, heuristic_matrix(df.prompt))
+        np.save(emb_path, embed(df.prompt))
     fs = FeatureStore([head_tail(t) for t in df.prompt], np.load(heur_path), np.load(emb_path), df.category.to_numpy())
 
     split = df.split.to_numpy()
